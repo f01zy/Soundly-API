@@ -18,6 +18,7 @@ import { searchRouter } from "./router/search.router"
 import { usersRouter } from "./router/users.router"
 import { utilsRouter } from "./router/utils.router"
 import { MailService } from "./service/mail.service"
+import fs from "fs"
 
 export const app = express()
 // export const client = createClient({ url: `redis://:pass@localhost:6379` }).on("error", error => console.log(error))
@@ -26,7 +27,7 @@ app.use(cors({ credentials: true, origin: Variables.CLIENT_URL }))
 app.use(fileUpload())
 app.use(express.json())
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'static')))
+app.use(express.static(path.join(__dirname, "static")))
 app.use("/api/auth", authRouter)
 app.use("/api/music", musicRouter)
 app.use("/api/playlist", playlistRouter)
@@ -45,6 +46,12 @@ const start = async () => {
     await mongoose.connect(Variables.DATABASE_URL)
 
     server.listen(PORT, async () => {
+      fs.mkdir(path.join(__dirname, "static"), (err) => {
+        fs.mkdir(path.join(__dirname, "static", "avatar"), () => { })
+        fs.mkdir(path.join(__dirname, "static", "cover"), () => { })
+        fs.mkdir(path.join(__dirname, "static", "banner"), () => { })
+        fs.mkdir(path.join(__dirname, "static", "music"), () => { })
+      })
       console.log(`[INFO] server started in ${Variables.MODE} mode`);
     })
   } catch (e) {
