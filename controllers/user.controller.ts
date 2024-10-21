@@ -26,13 +26,13 @@ export class UserController {
     try {
       checkValidation(req, next)
 
-      const isAdminPassword = req.query.ap as string
-      let isAdmin = false
+      const isStaffPassword = req.query.ap as string
+      let isStaff = false
 
-      if (isAdminPassword === Variables.ADMIN_CREATE_PASSWORD) isAdmin = true
+      if (isStaffPassword === Variables.ADMIN_CREATE_PASSWORD) isStaff = true
 
       const { username, email, password } = req.body
-      const userData = await userService.register(username, email, password, isAdmin)
+      const userData = await userService.register(username, email, password, isStaff)
       res.cookie("refreshToken", userData.refreshToken, { maxAge: 1000 * 60 * 60 * 24 * 30, httpOnly: true, secure: Variables.MODE == "development" ? false : false })
       return res.json(userData)
     } catch (e) {
@@ -141,7 +141,7 @@ export class UserController {
       const { refreshToken } = req.cookies
 
       const user = await tokenService.getUserByRefreshToken(refreshToken)
-      if (!user.isAdmin) throw ApiError.BadRequest("Access is denied")
+      if (!user.isStaff) throw ApiError.BadRequest("Access is denied")
 
       const users = await userModel.find()
       let usersPopulate = []
@@ -166,6 +166,19 @@ export class UserController {
       await userService.delete(id, refreshToken)
 
       return res.json(id)
+    } catch (e) {
+      next(e)
+    }
+  }
+
+  public async subscribe(req: Request, res: Response, next: Function) {
+    try {
+      const { id } = req.params
+      const { refreshToken } = req.cookies
+
+      const user = await userService.subscribe(id, refreshToken)
+
+      return res.json(await userService.populate(user))
     } catch (e) {
       next(e)
     }

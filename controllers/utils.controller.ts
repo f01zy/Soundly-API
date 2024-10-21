@@ -12,7 +12,7 @@ export class UtilsController {
       const { refreshToken } = req.cookies
       const user = await tokenService.getUserByRefreshToken(refreshToken)
 
-      if (!user.isAdmin) throw ApiError.BadRequest("Access is denied")
+      if (!user.isStaff) throw ApiError.BadRequest("Access is denied")
 
       const statistics = await utilsService.statistics()
 

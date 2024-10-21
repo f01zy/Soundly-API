@@ -19,7 +19,7 @@ const tokenService = new TokenService()
 const musicService = new MusicService()
 
 export class UserService {
-  public async register(username: string, email: string, password: string, isAdmin: boolean) {
+  public async register(username: string, email: string, password: string, isStaff: boolean) {
     const candidateEmail = await userModel.findOne({ email })
 
     if (candidateEmail) {
@@ -37,7 +37,7 @@ export class UserService {
 
     await mailService.sendActivationMail(email, Variables.SERVER_URL + "/api/auth/activate/" + activationLink)
 
-    const user = await userModel.create({ username, email, password: hashPassword, activationLink, isAdmin: isAdmin })
+    const user = await userModel.create({ username, email, password: hashPassword, activationLink, isStaff: isStaff })
 
     const tokens = await tokenService.generateTokens(user.id)
     await tokenService.saveToken(user.id, tokens.refreshToken)
@@ -152,14 +152,16 @@ export class UserService {
       { path: "tracks", populate: "author" },
       { path: "likes", populate: "author" },
       { path: "history", populate: "author" },
-      { path: "playlists", populate: [{ path: "author" }, { path: "tracks", populate: "author" }] }
+      { path: "playlists", populate: [{ path: "author" }, { path: "tracks", populate: "author" }] },
+      { path: "subscriptions" },
+      { path: "subscribers" }
     ])
   }
 
   public async delete(id: string, refreshToken: string) {
     const user = await tokenService.getUserByRefreshToken(refreshToken)
 
-    if (!user.isAdmin) throw ApiError.BadRequest("Access is denied")
+    if (!user.isStaff) throw ApiError.BadRequest("Access is denied")
     if (!Types.ObjectId.isValid(id)) throw ApiError.BadRequest("User not found")
 
     const deleteUser = await userModel.findById(id)
@@ -184,5 +186,29 @@ export class UserService {
     })
 
     await deleteUser.deleteOne()
+  }
+
+  public async subscribe(id: string, refreshToken: string) {
+    const user = await tokenService.getUserByRefreshToken(refreshToken)
+
+    if (!user.isActivated) throw ApiError.BadRequest("Confirm email")
+    if (!Types.ObjectId.isValid(id)) throw ApiError.BadRequest("User not found")
+
+    const searchUser = await userModel.findById(id)
+
+    if (!searchUser) throw ApiError.BadRequest("User not found")
+
+    if (user.subscriptions.some(item => item === searchUser.id)) {
+      user.subscriptions = user.subscriptions.filter(item => item != searchUser.id)
+      searchUser.subscribers = searchUser.subscribers.filter(item => item != user.id)
+    } else {
+      user.subscriptions.push(searchUser.id)
+      searchUser.subscribers.push(user.id)
+    }
+
+    searchUser.save()
+    user.save()
+
+    return user
   }
 }

@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 
 export interface IUser {
-  isAdmin: boolean
+  isStaff: boolean
   username: string
   email: string
   password: string
@@ -15,4 +15,6 @@ export interface IUser {
   tracks: Array<Schema.Types.ObjectId>
   history: Array<Schema.Types.ObjectId>
   playlists: Array<Schema.Types.ObjectId>
+  subscriptions: Array<Schema.Types.ObjectId>
+  subscribers: Array<Schema.Types.ObjectId>
 }

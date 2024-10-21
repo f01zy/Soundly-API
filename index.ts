@@ -47,10 +47,12 @@ const start = async () => {
 
     server.listen(PORT, async () => {
       fs.mkdir(path.join(__dirname, "static"), (err) => {
-        fs.mkdir(path.join(__dirname, "static", "avatar"), () => { })
-        fs.mkdir(path.join(__dirname, "static", "cover"), () => { })
-        fs.mkdir(path.join(__dirname, "static", "banner"), () => { })
-        fs.mkdir(path.join(__dirname, "static", "music"), () => { })
+        [
+          "avatar",
+          "banner",
+          "cover",
+          "music"
+        ].map(item => fs.mkdir(path.join(__dirname, "static", item), () => { }))
       })
       console.log(`[INFO] server started in ${Variables.MODE} mode`);
     })

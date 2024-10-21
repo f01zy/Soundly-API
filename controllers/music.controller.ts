@@ -111,7 +111,7 @@ export class MusicController {
       const { id } = req.params
       const user = await tokenService.getUserByRefreshToken(refreshToken)
 
-      if (!user.isAdmin) throw ApiError.BadRequest("Access is denied")
+      if (!user.isStaff) throw ApiError.BadRequest("Access is denied")
       if (!Types.ObjectId.isValid(id)) throw ApiError.BadRequest("Music not found")
 
       await musicService.delete(id)

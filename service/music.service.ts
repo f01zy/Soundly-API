@@ -34,6 +34,8 @@ export class MusicService {
   public async create(files: UploadedFile[], name: string, refreshToken: string) {
     const user = await tokenService.getUserByRefreshToken(refreshToken)
 
+    if (!user.isActivated) throw ApiError.BadRequest("Confirm email")
+
     const musicSearch = await musicModel.findOne({ name })
     if (musicSearch) throw ApiError.BadRequest("Track already exists")
 

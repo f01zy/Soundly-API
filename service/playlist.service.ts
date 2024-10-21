@@ -10,6 +10,9 @@ const tokenService = new TokenService()
 export class PlaylistService {
   async create(refreshToken: string, name: string, description: string, tracks: Array<IMusic>) {
     const user = await tokenService.getUserByRefreshToken(refreshToken)
+
+    if (!user.isActivated) throw ApiError.BadRequest("Confirm email")
+
     const playlist = await playlistModel.create({ name, description, tracks, author: user })
 
     playlist.saving.push(user.id)

@@ -6,6 +6,7 @@ const userController = new UserController()
 
 export const usersRouter = Router()
 
+usersRouter.get("/", userController.getUsers)
 usersRouter.put("/",
   body("username").isString().optional().isLength({ min: 4, max: 16 }),
   body("description").isString().optional().isLength({ max: 200 }),
@@ -14,4 +15,4 @@ usersRouter.put("/",
 )
 usersRouter.get("/:id", userController.getUserById)
 usersRouter.delete("/:id", userController.delete)
-usersRouter.get("/", userController.getUsers)
+usersRouter.post("/:id/subscribe", userController.subscribe)
